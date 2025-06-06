@@ -1,4 +1,14 @@
 # Get channel notifications
-
 GET http://127.0.0.1:8000/1
 Accept: text/event-stream
+
+###
+
+# Post channel notification
+POST http://127.0.0.1:8000/1
+Content-Type: application/json
+
+{
+    "message": "hello, world"
+}
+

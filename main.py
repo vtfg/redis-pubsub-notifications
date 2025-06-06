@@ -1,14 +1,19 @@
 import asyncio
-from typing import List, AsyncGenerator
+from typing import AsyncGenerator
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
 
 app = FastAPI()
 
+notifications = {"1": ["fizz", "buzz"], "2": ["foo", "bar"]}
+
 
 @app.get("/{channel}", response_class=StreamingResponse)
 async def get_notifications(channel: str | None) -> StreamingResponse:
+    if channel not in notifications:
+        raise HTTPException(status_code=404, detail=f"Channel {channel} not found.")
+
     return StreamingResponse(
         _get_notifications(channel),
         media_type="text/event-stream",
@@ -20,12 +25,7 @@ async def get_notifications(channel: str | None) -> StreamingResponse:
 
 
 async def _get_notifications(channel: str) -> AsyncGenerator[str, None]:
-    notifications = {"1": ["fizz", "buzz"], "2": ["foo", "bar"]}
-
-    if channel not in notifications:
-        raise HTTPException(status_code=404, detail=f"Channel {channel} not found.")
-
     for notification in notifications[channel]:
-        await asyncio.sleep(1)
+        yield f"data: {notification}\n\n"
 
-        yield f"Notification received: {notification}\n"
+        await asyncio.sleep(1)
